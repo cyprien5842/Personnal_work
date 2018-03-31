@@ -23,7 +23,8 @@ def do_the_breakdown(mode):
                     sum += abs(bounding_box_value)
 
         if mode in ["Top_to_the_bottom", "Bottom_to_the_top"]:
-            sum = pmc.getAttr("{0}.{1}".format(transform_parent, "scalePivot"))[1]
+            # Get the worldspace position of translateY value
+            sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
 
         # Convert to absolute value
         geometry_dict[transform_parent] = sum
