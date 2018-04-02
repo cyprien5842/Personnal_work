@@ -10,7 +10,7 @@ def getFrameRange():
     return frame_range
 
 
-def do_the_breakdown(mode):
+def do_the_breakdown(mode=None, visible=None):
     geometry_dict = {}
     for transform in pmc.ls(geometry=True):
         # Get parent of the shape transform
@@ -53,12 +53,18 @@ def do_the_breakdown(mode):
     for geometry, size_bounding_box in sorted_geometry_dict:
         compt += 1
         print("{0}/{1}".format(compt, len(sorted_geometry_dict)))
-        # TODO: Choose direction (Z, Y, X axis)
-        attribute = "translateY"
-        current_value = pmc.getAttr("{0}.{1}".format(geometry, attribute))
-        # TODO: Choose the height (speed)
-        pmc.setKeyframe(geometry, attribute=attribute, value=current_value+1000, time=start_frame)
-        pmc.setKeyframe(geometry, attribute=attribute, value=current_value, time=gap*compt)
+        if visible:
+            attribute = "visibility"
+            pmc.setKeyframe(geometry, attribute=attribute, value=0, time=start_frame)
+            pmc.setKeyframe(geometry, attribute=attribute, value=1, time=gap * compt)
+        else:
+            # TODO: Choose direction (Z, Y, X axis)
+            attribute = "translateY"
+            offset = 1000
+            current_value = pmc.getAttr("{0}.{1}".format(geometry, attribute)) + offset
+            # TODO: Choose the height (speed)
+            pmc.setKeyframe(geometry, attribute=attribute, value=current_value, time=start_frame)
+            pmc.setKeyframe(geometry, attribute=attribute, value=current_value, time=gap*compt)
 
     # Go back to the start frame
     pmc.currentTime(start_frame, edit=True)

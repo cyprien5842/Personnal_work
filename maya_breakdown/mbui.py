@@ -6,7 +6,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import maya_breakdown.mbcore as mbcore
 from maya_breakdown.vendor.Qt import QtWidgets, QtCore, QtGui
-
+#from PyQt5 import QtWidgets, QtGui, QtCore
 
 class MayaBreakdownUI(QtWidgets.QDialog):
     def __init__(self, parent=QtWidgets.QApplication.desktop()):
@@ -14,7 +14,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.setWindowTitle('Maya Breakdown Generator')
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.setModal(False)
-        self.setFixedHeight(60)
+        self.setFixedHeight(90)
         self.setFixedWidth(300)
 
         # Main Layout
@@ -23,16 +23,23 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         # Combo Box Layout
         self.combo_box_layout = QtWidgets.QHBoxLayout()
 
-        # Combo Box widgets
+        # Combo Box Widgets
+        self.mode_label = QtWidgets.QLabel("Mode :")
+
         self.cbox_mode = QtWidgets.QComboBox()
         self.cbox_mode.addItem("Bounding_box")
         self.cbox_mode.addItem("Top_to_the_bottom")
         self.cbox_mode.addItem("Bottom_to_the_top")
 
-        self.mode_label = QtWidgets.QLabel("Mode :")
-
         self.combo_box_layout.addWidget(self.mode_label)
         self.combo_box_layout.addWidget(self.cbox_mode)
+
+        # Check Box Layout
+        self.check_box_layout = QtWidgets.QHBoxLayout()
+
+        # Check Box Widgets
+        self.visible_check_box = QtWidgets.QCheckBox("Visible/Invisible effect")
+        self.check_box_layout.addWidget(self.visible_check_box)
 
         # Button Layout
         self.button_layout = QtWidgets.QHBoxLayout()
@@ -50,6 +57,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
 
         # Creation of the main layout
         self.main_layout.addLayout(self.combo_box_layout)
+        self.main_layout.addLayout(self.check_box_layout)
         self.main_layout.addLayout(self.button_layout)
 
         self.setLayout(self.main_layout)
@@ -57,7 +65,12 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.main_layout.setSpacing(5)
 
     def apply(self):
-        mbcore.do_the_breakdown(self.cbox_mode.currentText())
+        mode_value = self.cbox_mode.currentText()
+        if self.visible_check_box.isChecked():
+            visible_value = True
+        else:
+            visible_value = False
+        mbcore.do_the_breakdown(mode=mode_value, visible=visible_value)
 
 
 def show_window():
