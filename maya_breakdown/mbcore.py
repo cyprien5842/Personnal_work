@@ -1,16 +1,21 @@
 import pymel.core as pmc
 import operator
 
-def getFrameRange():
+def getFrameRange(time):
     frame_range = []
-    start_frame = int(pmc.playbackOptions(animationStartTime=True, query=True))
+    # TODO: Use current frame range
+    #start_frame = int(pmc.playbackOptions(animationStartTime=True, query=True))
+    #end_frame = int(pmc.playbackOptions(animationEndTime=True, query=True))
+    start_frame = 0
     frame_range.append(start_frame)
-    end_frame = int(pmc.playbackOptions(animationEndTime =True, query=True))
+    # TODO: Choose FPS
+    end_frame = time*25
     frame_range.append(end_frame)
+    pmc.playbackOptions(minTime=start_frame, maxTime=end_frame, playbackSpeed=0, maxPlaybackSpeed=1, edit=True)
     return frame_range
 
 
-def do_the_breakdown(mode=None, visible=None):
+def do_the_breakdown(mode=None, visible=None, time=None):
     geometry_dict = {}
     for transform in pmc.ls(geometry=True):
         # Get parent of the shape transform
@@ -41,7 +46,7 @@ def do_the_breakdown(mode=None, visible=None):
     print(sorted_geometry_dict)
 
     print("####### frame range #######")
-    start_frame, end_frame = getFrameRange()
+    start_frame, end_frame = getFrameRange(time)
     print(start_frame)
     print(end_frame)
     dif_frame_range = end_frame - start_frame
@@ -61,9 +66,9 @@ def do_the_breakdown(mode=None, visible=None):
             # TODO: Choose direction (Z, Y, X axis)
             attribute = "translateY"
             offset = 1000
-            current_value = pmc.getAttr("{0}.{1}".format(geometry, attribute)) + offset
+            current_value = pmc.getAttr("{0}.{1}".format(geometry, attribute))
             # TODO: Choose the height (speed)
-            pmc.setKeyframe(geometry, attribute=attribute, value=current_value, time=start_frame)
+            pmc.setKeyframe(geometry, attribute=attribute, value=current_value + offset, time=start_frame)
             pmc.setKeyframe(geometry, attribute=attribute, value=current_value, time=gap*compt)
 
     # Go back to the start frame

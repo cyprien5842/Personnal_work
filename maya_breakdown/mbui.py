@@ -14,7 +14,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.setWindowTitle('Maya Breakdown Generator')
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.setModal(False)
-        self.setFixedHeight(90)
+        self.setFixedHeight(100)
         self.setFixedWidth(300)
 
         # Main Layout
@@ -41,6 +41,29 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.visible_check_box = QtWidgets.QCheckBox("Visible/Invisible effect")
         self.check_box_layout.addWidget(self.visible_check_box)
 
+        # Frame Range Layout
+        self.frame_range_layout = QtWidgets.QHBoxLayout()
+
+        # Frame Range Widgets
+        self.frame_range_label = QtWidgets.QLabel("Time (seconds) :")
+        self.frame_range_input = QtWidgets.QLineEdit()
+        self.frame_range_input.setText("0")
+        self.frame_range_input.setFixedWidth(30)
+
+        # Validator for int value
+        self.only_int = QtGui.QIntValidator()
+        self.frame_range_input.setValidator(self.only_int)
+        self.frame_range_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
+        self.frame_range_slider.setMaximum(50)
+
+        # Connection
+        self.frame_range_slider.valueChanged.connect(lambda value: self.frame_range_input.setText(str(value)))
+        self.frame_range_input.textChanged.connect(lambda value: self.frame_range_slider.setValue(int(value)))
+
+        self.frame_range_layout.addWidget(self.frame_range_label)
+        self.frame_range_layout.addWidget(self.frame_range_input)
+        self.frame_range_layout.addWidget(self.frame_range_slider)
+
         # Button Layout
         self.button_layout = QtWidgets.QHBoxLayout()
 
@@ -58,6 +81,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         # Creation of the main layout
         self.main_layout.addLayout(self.combo_box_layout)
         self.main_layout.addLayout(self.check_box_layout)
+        self.main_layout.addLayout(self.frame_range_layout)
         self.main_layout.addLayout(self.button_layout)
 
         self.setLayout(self.main_layout)
@@ -70,7 +94,8 @@ class MayaBreakdownUI(QtWidgets.QDialog):
             visible_value = True
         else:
             visible_value = False
-        mbcore.do_the_breakdown(mode=mode_value, visible=visible_value)
+        time_value = int(self.frame_range_input.text())
+        mbcore.do_the_breakdown(mode=mode_value, visible=visible_value, time=time_value)
 
 
 def show_window():
