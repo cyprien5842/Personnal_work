@@ -16,10 +16,11 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         super(MayaBreakdownUI, self).__init__(parent)
         self.setWindowTitle('Maya Breakdown Generator')
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        self.setModal(False)
         self.setFixedHeight(100)
         self.setFixedWidth(300)
-        self.action = ""
+
+        # Validator for int value
+        self.only_int = QtGui.QIntValidator()
 
         # Main Layout
         self.main_layout = QtWidgets.QVBoxLayout()
@@ -38,12 +39,19 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.combo_box_layout.addWidget(self.mode_label)
         self.combo_box_layout.addWidget(self.cbox_mode)
 
-        # Check Box Layout
-        self.check_box_layout = QtWidgets.QHBoxLayout()
+        # Option Layout
+        self.option_layout = QtWidgets.QHBoxLayout()
 
-        # Check Box Widgets
+        # Option Widgets
         self.visible_check_box = QtWidgets.QCheckBox("Visible/Invisible effect")
-        self.check_box_layout.addWidget(self.visible_check_box)
+        self.visible_check_box.stateChanged.connect(self.update_current_option_mode)
+        self.offset_input_label = QtWidgets.QLabel("Offset :")
+        self.offset_input = QtWidgets.QLineEdit()
+        self.offset_input.setValidator(self.only_int)
+
+        self.option_layout.addWidget(self.visible_check_box)
+        self.option_layout.addWidget(self.offset_input_label)
+        self.option_layout.addWidget(self.offset_input)
 
         # Frame Range Layout
         self.frame_range_layout = QtWidgets.QHBoxLayout()
@@ -54,8 +62,6 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.frame_range_input.setText("0")
         self.frame_range_input.setFixedWidth(30)
 
-        # Validator for int value
-        self.only_int = QtGui.QIntValidator()
         self.frame_range_input.setValidator(self.only_int)
         self.frame_range_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
         self.frame_range_slider.setMaximum(50)
@@ -87,7 +93,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
 
         # Creation of the main layout
         self.main_layout.addLayout(self.combo_box_layout)
-        self.main_layout.addLayout(self.check_box_layout)
+        self.main_layout.addLayout(self.option_layout)
         self.main_layout.addLayout(self.frame_range_layout)
         self.main_layout.addLayout(self.button_layout)
 
@@ -96,19 +102,33 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.main_layout.setSpacing(5)
 
     def apply(self):
-        mode_value = self.cbox_mode.currentText()
+        setting_dictionnary = {}
+        setting_dictionnary['mode'] = self.cbox_mode.currentText()
+        setting_dictionnary['time'] = int(self.frame_range_input.text())
         if self.visible_check_box.isChecked():
-            visible_value = True
+            setting_dictionnary['visible'] = True
+            setting_dictionnary['attribute'] = "visibility"
+            setting_dictionnary['offset'] = 0
         else:
-            visible_value = False
-        time_value = int(self.frame_range_input.text())
-        self.action = mbcore.do_the_breakdown(mode=mode_value, visible=visible_value, time=time_value)
+            setting_dictionnary['visible'] = False
+            setting_dictionnary['attribute'] = "translateY"
+            setting_dictionnary['offset'] = int(self.offset_input.text())
+        self.action = mbcore.do_the_breakdown(setting_dictionnary)
 
     def undo(self):
         if self.action:
             mbcore.undo(self.action)
         else:
             pmc.warning("Please, do a breakdown !")
+
+    def update_current_option_mode(self):
+        if self.visible_check_box.isChecked():
+            self.offset_input_label.setVisible(False)
+            self.offset_input.setVisible(False)
+        else:
+            self.offset_input_label.setVisible(True)
+            self.offset_input.setVisible(True)
+
 
 
 

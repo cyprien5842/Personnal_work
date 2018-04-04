@@ -16,17 +16,18 @@ def getFrameRange(time):
     return frame_range
 
 
-def do_the_breakdown(mode=None, visible=None, time=None):
-    breakdown_dict = {}
-    breakdown_dict['mode'] = mode
-    breakdown_dict['visible'] = visible
-    transform_dict = {}
+def do_the_breakdown(setting_dictionnary):
+    mode = setting_dictionnary['mode']
+    visible = setting_dictionnary['visible']
+    time = setting_dictionnary['time']
+    attribute = setting_dictionnary['attribute']
+    offset = setting_dictionnary['offset']
 
+    transform_dict = {}
     for transform in pmc.ls(geometry=True):
         # Get parent of the shape transform
         transform_parent = pmc.listRelatives(transform, parent=True)[0]
         sum = 0
-
         if mode in ["Bounding_box"]:
             for bounding_box in transform_parent.getBoundingBox():
                 for bounding_box_value in bounding_box:
@@ -46,11 +47,11 @@ def do_the_breakdown(mode=None, visible=None, time=None):
     if mode in ["Bottom_to_the_top"]:
         sorted_geometry_dict = sorted(transform_dict.items(), key=operator.itemgetter(1))
 
-    breakdown_dict['transform_lst'] = sorted_geometry_dict
+    setting_dictionnary['transform_lst'] = sorted_geometry_dict
 
     # Calculate frame range
     start_frame, end_frame = getFrameRange(time)
-    breakdown_dict['frame_range'] = (start_frame, end_frame)
+    setting_dictionnary['frame_range'] = (start_frame, end_frame)
     dif_frame_range = end_frame - start_frame
 
     print("####### Initialize Processing  #######")
@@ -60,25 +61,19 @@ def do_the_breakdown(mode=None, visible=None, time=None):
         compt += 1
         print("{0}/{1}".format(compt, len(sorted_geometry_dict)))
         if visible:
-            attribute = "visibility"
             pmc.setKeyframe(geometry, attribute=attribute, value=0, time=start_frame)
             pmc.setKeyframe(geometry, attribute=attribute, value=1, time=gap * compt)
         else:
             # TODO: Choose direction (Z, Y, X axis)
-            attribute = "translateY"
-            offset = 1000
-            breakdown_dict['offset'] = offset
             current_value = pmc.getAttr("{0}.{1}".format(geometry, attribute))
             # TODO: Choose the height (speed)
             pmc.setKeyframe(geometry, attribute=attribute, value=current_value + offset, time=start_frame)
             pmc.setKeyframe(geometry, attribute=attribute, value=current_value, time=gap*compt)
 
-        breakdown_dict['attribute'] = attribute
-
     # Go back to the start frame
     pmc.currentTime(start_frame, edit=True)
 
-    return breakdown_dict
+    return setting_dictionnary
 
 
 def undo(dict):
