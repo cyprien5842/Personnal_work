@@ -1,12 +1,15 @@
 # Standart import
 import os
 import sys
+import pymel.core as pmc
 
 # Custom import
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import maya_breakdown.mbcore as mbcore
+reload(mbcore)
 from maya_breakdown.vendor.Qt import QtWidgets, QtCore, QtGui
 #from PyQt5 import QtWidgets, QtGui, QtCore
+
 
 class MayaBreakdownUI(QtWidgets.QDialog):
     def __init__(self, parent=QtWidgets.QApplication.desktop()):
@@ -16,6 +19,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.setModal(False)
         self.setFixedHeight(100)
         self.setFixedWidth(300)
+        self.action = ""
 
         # Main Layout
         self.main_layout = QtWidgets.QVBoxLayout()
@@ -69,12 +73,15 @@ class MayaBreakdownUI(QtWidgets.QDialog):
 
         # Buttons widgets
         self.button_validate = QtWidgets.QPushButton("Validate")
+        self.button_undo = QtWidgets.QPushButton("Undo")
         self.button_close = QtWidgets.QPushButton("Close")
 
         self.button_validate.clicked.connect(self.apply)
+        self.button_undo.clicked.connect(self.undo)
         self.button_close.clicked.connect(self.close)
 
         self.button_layout.addWidget(self.button_validate)
+        self.button_layout.addWidget(self.button_undo)
         self.button_layout.addWidget(self.button_close)
         self.button_layout.setAlignment(QtCore.Qt.AlignBottom)
 
@@ -95,7 +102,14 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         else:
             visible_value = False
         time_value = int(self.frame_range_input.text())
-        mbcore.do_the_breakdown(mode=mode_value, visible=visible_value, time=time_value)
+        self.action = mbcore.do_the_breakdown(mode=mode_value, visible=visible_value, time=time_value)
+
+    def undo(self):
+        if self.action:
+            mbcore.undo(self.action)
+        else:
+            pmc.warning("Please, do a breakdown !")
+
 
 
 def show_window():
