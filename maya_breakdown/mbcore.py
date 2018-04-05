@@ -23,6 +23,7 @@ def do_the_breakdown(setting_dictionnary):
     attribute = setting_dictionnary['attribute']
     offset = setting_dictionnary['offset']
 
+    transform_position_dict = {}
     transform_dict = {}
     for transform in pmc.ls(geometry=True):
         # Get parent of the shape transform
@@ -38,6 +39,7 @@ def do_the_breakdown(setting_dictionnary):
             sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
 
         # Convert to absolute value
+        transform_position_dict[transform_parent.name()] = pmc.getAttr("{0}.{1}".format(transform_parent, attribute))
         transform_dict[transform_parent] = sum
 
     # Sort the transform dictionnary
@@ -47,7 +49,7 @@ def do_the_breakdown(setting_dictionnary):
     if mode in ["Bottom_to_the_top"]:
         sorted_geometry_dict = sorted(transform_dict.items(), key=operator.itemgetter(1))
 
-    setting_dictionnary['transform_lst'] = sorted_geometry_dict
+    setting_dictionnary['transform_lst'] = sorted(transform_position_dict.items(), key=operator.itemgetter(1))
 
     # Calculate frame range
     start_frame, end_frame = getFrameRange(time)
@@ -78,7 +80,6 @@ def do_the_breakdown(setting_dictionnary):
 
 def undo(dict):
     for geometry, value in dict['transform_lst']:
-        print(geometry, value)
         pmc.cutKey(geometry, time=(dict['frame_range'][0], dict['frame_range'][1]), attribute=dict['attribute'], option="keys")
         if dict['visible']:
             pmc.setAttr("{0}.{1}".format(geometry, dict['attribute']), 1)

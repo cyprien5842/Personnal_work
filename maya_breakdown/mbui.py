@@ -16,7 +16,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         super(MayaBreakdownUI, self).__init__(parent)
         self.setWindowTitle('Maya Breakdown Generator')
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        self.setFixedHeight(100)
+        self.setFixedHeight(115)
         self.setFixedWidth(300)
 
         # Validator for int value
@@ -45,7 +45,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         # Option Widgets
         self.visible_check_box = QtWidgets.QCheckBox("Visible/Invisible effect")
         self.visible_check_box.stateChanged.connect(self.update_current_option_mode)
-        self.offset_input_label = QtWidgets.QLabel("Offset :")
+        self.offset_input_label = QtWidgets.QLabel("Transform offset :")
         self.offset_input = QtWidgets.QLineEdit()
         self.offset_input.setValidator(self.only_int)
 
