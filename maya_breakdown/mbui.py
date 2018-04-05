@@ -18,7 +18,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         super(MayaBreakdownUI, self).__init__(parent)
         self.setWindowTitle('Maya Breakdown Generator')
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        self.setFixedHeight(175)
+        self.setFixedHeight(190)
         self.setFixedWidth(300)
 
         # Validator for int value
@@ -86,6 +86,12 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.frame_range_layout.addWidget(self.frame_range_input)
         self.frame_range_layout.addWidget(self.frame_range_slider)
 
+        # Progress Bar Layout
+        self.progress_layout = QtWidgets.QHBoxLayout()
+        self.progress_bar = QtWidgets.QProgressBar()
+        self.progress_bar.setValue(0)
+        self.progress_layout.addWidget(self.progress_bar)
+
         # Button Layout
         self.button_layout = QtWidgets.QHBoxLayout()
 
@@ -110,6 +116,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.main_layout.addLayout(self.option_layout)
         self.main_layout.addLayout(self.frame_range_separator_layout)
         self.main_layout.addLayout(self.frame_range_layout)
+        self.main_layout.addLayout(self.progress_layout)
         self.main_layout.addLayout(self.button_layout)
 
         self.setLayout(self.main_layout)
@@ -128,11 +135,11 @@ class MayaBreakdownUI(QtWidgets.QDialog):
             setting_dictionnary['visible'] = False
             setting_dictionnary['attribute'] = "translateY"
             setting_dictionnary['offset'] = int(self.offset_input.text())
-        self.action = mbcore.do_the_breakdown(setting_dictionnary)
+        self.action = mbcore.do_the_breakdown(setting_dictionnary, self.progress_bar)
 
     def undo(self):
         if self.action:
-            mbcore.undo(self.action)
+            mbcore.undo(self.action, self.progress_bar)
         else:
             pmc.warning("Please, do a breakdown !")
 

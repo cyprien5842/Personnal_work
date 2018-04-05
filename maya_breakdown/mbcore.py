@@ -16,7 +16,7 @@ def getFrameRange(time):
     return frame_range
 
 
-def do_the_breakdown(setting_dictionnary):
+def do_the_breakdown(setting_dictionnary, progressbar):
     mode = setting_dictionnary['mode']
     visible = setting_dictionnary['visible']
     time = setting_dictionnary['time']
@@ -64,7 +64,6 @@ def do_the_breakdown(setting_dictionnary):
     gap = float(dif_frame_range)/float(len(sorted_geometry_dict))
     for geometry, size_bounding_box in sorted_geometry_dict:
         compt += 1
-        print("{0}/{1}".format(compt, len(sorted_geometry_dict)))
         if visible:
             pmc.setKeyframe(geometry, attribute=attribute, value=0, time=start_frame)
             pmc.setKeyframe(geometry, attribute=attribute, value=1, time=gap * compt)
@@ -74,6 +73,7 @@ def do_the_breakdown(setting_dictionnary):
             # TODO: Choose the height (speed)
             pmc.setKeyframe(geometry, attribute=attribute, value=current_value + offset, time=start_frame)
             pmc.setKeyframe(geometry, attribute=attribute, value=current_value, time=gap*compt)
+        progressbar.setValue((compt * 100) / int(len(sorted_geometry_dict)))
 
     # Go back to the start frame
     pmc.currentTime(start_frame, edit=True)
@@ -81,8 +81,10 @@ def do_the_breakdown(setting_dictionnary):
     return setting_dictionnary
 
 
-def undo(dict):
+def undo(dict, progressbar):
+    compt = 0
     for geometry, value in dict['transform_lst']:
+        compt += 1
         pmc.cutKey(geometry, time=(dict['frame_range'][0], dict['frame_range'][1]), attribute=dict['attribute'], option="keys")
         if dict['visible']:
             pmc.setAttr("{0}.{1}".format(geometry, dict['attribute']), 1)
@@ -91,5 +93,6 @@ def undo(dict):
             shape.setAttr(dict['attribute'], 1)
         else:
             pmc.setAttr("{0}.{1}".format(geometry, dict['attribute']), value)
+        progressbar.setValue((compt * 100) / int(len(dict['transform_lst'])))
 
 
