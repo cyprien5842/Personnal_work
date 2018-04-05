@@ -23,12 +23,15 @@ def do_the_breakdown(setting_dictionnary):
     attribute = setting_dictionnary['attribute']
     offset = setting_dictionnary['offset']
 
+    # Create dict to save the position for the undo feature and another dict for make the breakdown
     transform_position_dict = {}
     transform_dict = {}
+
     for transform in pmc.ls(geometry=True):
         # Get parent of the shape transform
         transform_parent = pmc.listRelatives(transform, parent=True)[0]
         sum = 0
+
         if mode in ["Bounding_box"]:
             for bounding_box in transform_parent.getBoundingBox():
                 for bounding_box_value in bounding_box:
@@ -38,7 +41,7 @@ def do_the_breakdown(setting_dictionnary):
             # Get the worldspace position of translateY value
             sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
 
-        # Convert to absolute value
+        # Get the transform position
         transform_position_dict[transform_parent.name()] = pmc.getAttr("{0}.{1}".format(transform_parent, attribute))
         transform_dict[transform_parent] = sum
 

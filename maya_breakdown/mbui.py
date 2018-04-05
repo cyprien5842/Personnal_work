@@ -6,9 +6,11 @@ import pymel.core as pmc
 # Custom import
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import maya_breakdown.mbcore as mbcore
+import maya_breakdown.hline as hline
+reload(hline)
 reload(mbcore)
 from maya_breakdown.vendor.Qt import QtWidgets, QtCore, QtGui
-#from PyQt5 import QtWidgets, QtGui, QtCore
+from PySide2 import QtWidgets, QtGui, QtCore
 
 
 class MayaBreakdownUI(QtWidgets.QDialog):
@@ -16,7 +18,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         super(MayaBreakdownUI, self).__init__(parent)
         self.setWindowTitle('Maya Breakdown Generator')
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        self.setFixedHeight(115)
+        self.setFixedHeight(175)
         self.setFixedWidth(300)
 
         # Validator for int value
@@ -27,6 +29,9 @@ class MayaBreakdownUI(QtWidgets.QDialog):
 
         # Combo Box Layout
         self.combo_box_layout = QtWidgets.QHBoxLayout()
+
+        # Mode Separator
+        self.mode_separator_layout = hline.hline_layout("Mode")
 
         # Combo Box Widgets
         self.mode_label = QtWidgets.QLabel("Mode :")
@@ -39,6 +44,9 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.combo_box_layout.addWidget(self.mode_label)
         self.combo_box_layout.addWidget(self.cbox_mode)
 
+        # Option Separator
+        self.option_separator_layout = hline.hline_layout("Options")
+
         # Option Layout
         self.option_layout = QtWidgets.QHBoxLayout()
 
@@ -47,11 +55,15 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.visible_check_box.stateChanged.connect(self.update_current_option_mode)
         self.offset_input_label = QtWidgets.QLabel("Transform offset :")
         self.offset_input = QtWidgets.QLineEdit()
+        self.offset_input.setText("1000")
         self.offset_input.setValidator(self.only_int)
 
         self.option_layout.addWidget(self.visible_check_box)
         self.option_layout.addWidget(self.offset_input_label)
         self.option_layout.addWidget(self.offset_input)
+
+        # Frame Range Separator
+        self.frame_range_separator_layout = hline.hline_layout("Frame Range")
 
         # Frame Range Layout
         self.frame_range_layout = QtWidgets.QHBoxLayout()
@@ -92,8 +104,11 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.button_layout.setAlignment(QtCore.Qt.AlignBottom)
 
         # Creation of the main layout
+        self.main_layout.addLayout(self.mode_separator_layout)
         self.main_layout.addLayout(self.combo_box_layout)
+        self.main_layout.addLayout(self.option_separator_layout)
         self.main_layout.addLayout(self.option_layout)
+        self.main_layout.addLayout(self.frame_range_separator_layout)
         self.main_layout.addLayout(self.frame_range_layout)
         self.main_layout.addLayout(self.button_layout)
 
@@ -128,8 +143,6 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         else:
             self.offset_input_label.setVisible(True)
             self.offset_input.setVisible(True)
-
-
 
 
 def show_window():
