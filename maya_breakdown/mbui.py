@@ -60,17 +60,30 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.option_layout.addWidget(self.visible_radio_btn)
         self.option_layout.addWidget(self.translate_radio_btn)
 
-        # Advanced option layout
-        self.advanced_option_layout = QtWidgets.QHBoxLayout()
+        # Transform offset layout
+        self.transform_offset_layout = QtWidgets.QHBoxLayout()
 
-        # Advanced option Widgets
+        # Transform offset widgets
         self.offset_input_label = QtWidgets.QLabel("Transform offset :")
         self.offset_input = QtWidgets.QLineEdit()
         self.offset_input.setText("1000")
         self.offset_input.setValidator(self.only_int)
 
-        self.advanced_option_layout.addWidget(self.offset_input_label)
-        self.advanced_option_layout.addWidget(self.offset_input)
+        self.transform_offset_layout.addWidget(self.offset_input_label)
+        self.transform_offset_layout.addWidget(self.offset_input)
+
+        # Transform direction layout
+        self.transform_direction_layout = QtWidgets.QHBoxLayout()
+
+        # Transform direction widgets
+        self.translate_direction_label = QtWidgets.QLabel("Translate direction :")
+        self.translate_direction_cbox = QtWidgets.QComboBox()
+        self.translate_direction_cbox.addItem("translateX")
+        self.translate_direction_cbox.addItem("translateY")
+        self.translate_direction_cbox.addItem("translateZ")
+
+        self.transform_direction_layout.addWidget(self.translate_direction_label)
+        self.transform_direction_layout.addWidget(self.translate_direction_cbox)
 
         # Frame Range Separator
         self.frame_range_separator_layout = hline.hline_layout("Frame Range")
@@ -124,7 +137,8 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.main_layout.addLayout(self.combo_box_layout)
         self.main_layout.addLayout(self.option_separator_layout)
         self.main_layout.addLayout(self.option_layout)
-        self.main_layout.addLayout(self.advanced_option_layout)
+        self.main_layout.addLayout(self.transform_offset_layout)
+        self.main_layout.addLayout(self.transform_direction_layout)
         self.main_layout.addLayout(self.frame_range_separator_layout)
         self.main_layout.addLayout(self.frame_range_layout)
         self.main_layout.addLayout(self.progress_layout)
@@ -144,7 +158,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
             setting_dictionnary['offset'] = 0
         else:
             setting_dictionnary['visible'] = False
-            setting_dictionnary['attribute'] = "translateY"
+            setting_dictionnary['attribute'] = self.translate_direction_cbox.currentText()
             setting_dictionnary['offset'] = int(self.offset_input.text())
         self.action = mbcore.do_the_breakdown(setting_dictionnary, self.progress_bar)
 
@@ -158,9 +172,13 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         if self.translate_radio_btn.isChecked():
             self.offset_input_label.setVisible(True)
             self.offset_input.setVisible(True)
+            self.translate_direction_label.setVisible(True)
+            self.translate_direction_cbox.setVisible(True)
         else:
             self.offset_input_label.setVisible(False)
             self.offset_input.setVisible(False)
+            self.translate_direction_label.setVisible(False)
+            self.translate_direction_cbox.setVisible(False)
 
 
 def show_window():

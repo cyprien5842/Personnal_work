@@ -39,8 +39,13 @@ def do_the_breakdown(setting_dictionnary, progressbar):
                     sum += abs(bounding_box_value)
 
         if mode in ["Top_to_the_bottom", "Bottom_to_the_top"]:
-            # Get the worldspace position of translateY value
-            sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
+            # Get the worldspace position in terms of translate attribute
+            if attribute == "translateX":
+                sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[0]
+            if attribute == "translateY":
+                sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
+            if attribute == "translateZ":
+                sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[2]
 
         # Get the transform position
         transform_position_dict[transform_parent.name()] = pmc.getAttr("{0}.{1}".format(transform_parent, attribute))
