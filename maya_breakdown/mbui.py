@@ -18,7 +18,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         super(MayaBreakdownUI, self).__init__(parent)
         self.setWindowTitle('Maya Breakdown Generator')
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        self.setFixedHeight(190)
+        self.setFixedHeight(215)
         self.setFixedWidth(300)
 
         # Validator for int value
@@ -51,16 +51,26 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.option_layout = QtWidgets.QHBoxLayout()
 
         # Option Widgets
-        self.visible_check_box = QtWidgets.QCheckBox("Visible/Invisible effect")
-        self.visible_check_box.stateChanged.connect(self.update_current_option_mode)
+        self.visible_radio_btn = QtWidgets.QRadioButton("Visible/Invisible effect")
+        self.translate_radio_btn = QtWidgets.QRadioButton("Translate effect")
+
+        self.translate_radio_btn.setChecked(True)
+        self.translate_radio_btn.toggled.connect(self.update_current_option_mode)
+
+        self.option_layout.addWidget(self.visible_radio_btn)
+        self.option_layout.addWidget(self.translate_radio_btn)
+
+        # Advanced option layout
+        self.advanced_option_layout = QtWidgets.QHBoxLayout()
+
+        # Advanced option Widgets
         self.offset_input_label = QtWidgets.QLabel("Transform offset :")
         self.offset_input = QtWidgets.QLineEdit()
         self.offset_input.setText("1000")
         self.offset_input.setValidator(self.only_int)
 
-        self.option_layout.addWidget(self.visible_check_box)
-        self.option_layout.addWidget(self.offset_input_label)
-        self.option_layout.addWidget(self.offset_input)
+        self.advanced_option_layout.addWidget(self.offset_input_label)
+        self.advanced_option_layout.addWidget(self.offset_input)
 
         # Frame Range Separator
         self.frame_range_separator_layout = hline.hline_layout("Frame Range")
@@ -114,6 +124,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.main_layout.addLayout(self.combo_box_layout)
         self.main_layout.addLayout(self.option_separator_layout)
         self.main_layout.addLayout(self.option_layout)
+        self.main_layout.addLayout(self.advanced_option_layout)
         self.main_layout.addLayout(self.frame_range_separator_layout)
         self.main_layout.addLayout(self.frame_range_layout)
         self.main_layout.addLayout(self.progress_layout)
@@ -127,7 +138,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         setting_dictionnary = {}
         setting_dictionnary['mode'] = self.cbox_mode.currentText()
         setting_dictionnary['time'] = int(self.frame_range_input.text())
-        if self.visible_check_box.isChecked():
+        if self.visible_radio_btn.isChecked():
             setting_dictionnary['visible'] = True
             setting_dictionnary['attribute'] = "visibility"
             setting_dictionnary['offset'] = 0
@@ -144,12 +155,12 @@ class MayaBreakdownUI(QtWidgets.QDialog):
             pmc.warning("Please, do a breakdown !")
 
     def update_current_option_mode(self):
-        if self.visible_check_box.isChecked():
-            self.offset_input_label.setVisible(False)
-            self.offset_input.setVisible(False)
-        else:
+        if self.translate_radio_btn.isChecked():
             self.offset_input_label.setVisible(True)
             self.offset_input.setVisible(True)
+        else:
+            self.offset_input_label.setVisible(False)
+            self.offset_input.setVisible(False)
 
 
 def show_window():

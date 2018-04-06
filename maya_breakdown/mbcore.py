@@ -17,6 +17,7 @@ def getFrameRange(time):
 
 
 def do_the_breakdown(setting_dictionnary, progressbar):
+    # Get the user conditions
     mode = setting_dictionnary['mode']
     visible = setting_dictionnary['visible']
     time = setting_dictionnary['time']
@@ -59,7 +60,7 @@ def do_the_breakdown(setting_dictionnary, progressbar):
     setting_dictionnary['frame_range'] = (start_frame, end_frame)
     dif_frame_range = end_frame - start_frame
 
-    print("####### Initialize Processing  #######")
+    # Do the operation
     compt = 0
     gap = float(dif_frame_range)/float(len(sorted_geometry_dict))
     for geometry, size_bounding_box in sorted_geometry_dict:
@@ -85,6 +86,7 @@ def undo(dict, progressbar):
     compt = 0
     for geometry, value in dict['transform_lst']:
         compt += 1
+        # Remove the keys
         pmc.cutKey(geometry, time=(dict['frame_range'][0], dict['frame_range'][1]), attribute=dict['attribute'], option="keys")
         if dict['visible']:
             pmc.setAttr("{0}.{1}".format(geometry, dict['attribute']), 1)
