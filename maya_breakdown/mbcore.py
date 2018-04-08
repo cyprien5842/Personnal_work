@@ -1,6 +1,6 @@
 import pymel.core as pmc
 import operator
-
+import math
 
 def getFrameRange(time):
     frame_range = []
@@ -74,9 +74,7 @@ def do_the_breakdown(setting_dictionnary, progressbar):
             pmc.setKeyframe(geometry, attribute=attribute, value=0, time=start_frame)
             pmc.setKeyframe(geometry, attribute=attribute, value=1, time=gap * compt)
         else:
-            # TODO: Choose direction (Z, Y, X axis)
             current_value = pmc.getAttr("{0}.{1}".format(geometry, attribute))
-            # TODO: Choose the height (speed)
             pmc.setKeyframe(geometry, attribute=attribute, value=current_value + offset, time=start_frame)
             pmc.setKeyframe(geometry, attribute=attribute, value=current_value, time=gap*compt)
         progressbar.setValue((compt * 100) / int(len(sorted_geometry_dict)))
@@ -103,3 +101,47 @@ def undo(dict, progressbar):
         progressbar.setValue((compt * 100) / int(len(dict['transform_lst'])))
 
 
+def create_turn_around():
+    # Function to set camera in a dynamically scale
+    camera_name = 'CAM_TURN_AROUND'
+
+    # Use the infinity
+    top = -float("inf")
+    bottom = float("inf")
+    right = -float("inf")
+    left = float("inf")
+    near = -float("inf")
+    depth = float("inf")
+    if not camera_name in str(pmc.ls(cameras=True)):
+        cam = pmc.createNode('camera', name=camera_name)
+        parent = cam.getParent()
+        parent.rename(camera_name)
+        for transform in pmc.ls(geometry=True):
+            # Get parent of the shape transform
+            transform_parent = pmc.listRelatives(transform, parent=True)[0]
+
+            right_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[0]
+            if right < right_value:
+                right = right_value
+
+            left_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[0]
+            if left > left_value:
+                left = left_value
+
+            top_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
+            if top < top_value:
+                top = top_value
+
+            bottom_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
+            if bottom > bottom_value:
+                bottom = bottom_value
+
+            near_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[2]
+            if near < near_value:
+                near = near_value
+
+            depth_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[2]
+            if depth > depth_value:
+                depth = depth_value
+    else:
+        pmc.warning("Camera already exists !")

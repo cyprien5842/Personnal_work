@@ -18,8 +18,6 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         super(MayaBreakdownUI, self).__init__(parent)
         self.setWindowTitle('Maya Breakdown Generator')
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        self.setFixedHeight(215)
-        self.setFixedWidth(300)
 
         # Validator for int value
         self.only_int = QtGui.QIntValidator()
@@ -120,14 +118,17 @@ class MayaBreakdownUI(QtWidgets.QDialog):
 
         # Buttons widgets
         self.button_validate = QtWidgets.QPushButton("Validate")
+        self.button_turn_around = QtWidgets.QPushButton("Turn Around")
         self.button_undo = QtWidgets.QPushButton("Undo")
         self.button_close = QtWidgets.QPushButton("Close")
 
         self.button_validate.clicked.connect(self.apply)
+        self.button_turn_around.clicked.connect(self.turn_around)
         self.button_undo.clicked.connect(self.undo)
         self.button_close.clicked.connect(self.close)
 
         self.button_layout.addWidget(self.button_validate)
+        self.button_layout.addWidget(self.button_turn_around)
         self.button_layout.addWidget(self.button_undo)
         self.button_layout.addWidget(self.button_close)
         self.button_layout.setAlignment(QtCore.Qt.AlignBottom)
@@ -147,6 +148,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.setLayout(self.main_layout)
         self.main_layout.setContentsMargins(5, 5, 5, 5)
         self.main_layout.setSpacing(5)
+        self.setFixedSize(self.main_layout.sizeHint())
 
     def apply(self):
         setting_dictionnary = {}
@@ -179,6 +181,9 @@ class MayaBreakdownUI(QtWidgets.QDialog):
             self.offset_input.setVisible(False)
             self.translate_direction_label.setVisible(False)
             self.translate_direction_cbox.setVisible(False)
+
+    def turn_around(self):
+        mbcore.create_turn_around()
 
 
 def show_window():
