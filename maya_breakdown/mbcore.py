@@ -61,9 +61,16 @@ def do_the_breakdown(setting_dictionnary, progressbar):
     setting_dictionnary['transform_lst'] = sorted(transform_position_dict.items(), key=operator.itemgetter(1))
 
     # Calculate frame range
-    start_frame, end_frame = getFrameRange(time)
-    setting_dictionnary['frame_range'] = (start_frame, end_frame)
+    if isinstance(time, tuple):
+        start_frame, end_frame = time
+        setting_dictionnary['frame_range'] = time
+    else:
+        start_frame, end_frame = getFrameRange(time)
+        setting_dictionnary['frame_range'] = (start_frame, end_frame)
     dif_frame_range = end_frame - start_frame
+
+    if setting_dictionnary['camera']:
+        create_turn_around(dif_frame_range)
 
     # Do the operation
     compt = 0
@@ -101,47 +108,99 @@ def undo(dict, progressbar):
         progressbar.setValue((compt * 100) / int(len(dict['transform_lst'])))
 
 
-def create_turn_around():
-    # Function to set camera in a dynamically scale
-    camera_name = 'CAM_TURN_AROUND'
-
-    # Use the infinity
-    top = -float("inf")
-    bottom = float("inf")
-    right = -float("inf")
-    left = float("inf")
-    near = -float("inf")
-    depth = float("inf")
-    if not camera_name in str(pmc.ls(cameras=True)):
-        cam = pmc.createNode('camera', name=camera_name)
-        parent = cam.getParent()
-        parent.rename(camera_name)
-        for transform in pmc.ls(geometry=True):
-            # Get parent of the shape transform
-            transform_parent = pmc.listRelatives(transform, parent=True)[0]
-
-            right_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[0]
-            if right < right_value:
-                right = right_value
-
-            left_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[0]
-            if left > left_value:
-                left = left_value
-
-            top_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
-            if top < top_value:
-                top = top_value
-
-            bottom_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
-            if bottom > bottom_value:
-                bottom = bottom_value
-
-            near_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[2]
-            if near < near_value:
-                near = near_value
-
-            depth_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[2]
-            if depth > depth_value:
-                depth = depth_value
-    else:
-        pmc.warning("Camera already exists !")
+def create_turn_around(dif_frame_range):
+    # # Function to set the camera translates in order to set a dynamically scale
+    # camera_name = 'CAM_TURN_AROUND'
+    #
+    # # Get the gap for front, left, bottom and right camera movement
+    # gap = dif_frame_range/4
+    #
+    # # Use the infinity value
+    # top = -float("inf")
+    # bottom = float("inf")
+    # right = -float("inf")
+    # left = float("inf")
+    # near = -float("inf")
+    # depth = float("inf")
+    #
+    # if not camera_name in str(pmc.ls(cameras=True)):
+    #     cam = pmc.createNode('camera', name=camera_name+"_shape")
+    #     cam_parent = cam.getParent()
+    #     cam_parent.rename(camera_name)
+    #
+    #     # Get the extreme value in order to create camera
+    #     for transform in pmc.ls(geometry=True):
+    #         # Get parent of the shape transform
+    #         transform_parent = pmc.listRelatives(transform, parent=True)[0]
+    #
+    #         right_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[0]
+    #         if right < right_value:
+    #             right = right_value
+    #
+    #         left_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[0]
+    #         if left > left_value:
+    #             left = left_value
+    #
+    #         top_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
+    #         if top < top_value:
+    #             top = top_value
+    #
+    #         bottom_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
+    #         if bottom > bottom_value:
+    #             bottom = bottom_value
+    #
+    #         near_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[2]
+    #         if near < near_value:
+    #             near = near_value
+    #
+    #         depth_value = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[2]
+    #         if depth > depth_value:
+    #             depth = depth_value
+    #
+    #     # Get the averages values
+    #     average_top_bottom = (top+bottom)/2
+    #     average_left_right = (left+right)/2
+    #     average_depth_near = (depth+near)/2
+    #
+    #     print("top :" + str(top))
+    #     print("bottom :" + str(bottom))
+    #     print("right :" + str(right))
+    #     print("left :" + str(left))
+    #     print("near :" + str(near))
+    #     print("depth :" + str(depth))
+    #     print("average_top_bottom :" + str(average_top_bottom))
+    #     print("average_left_right :" + str(average_left_right))
+    #     print("average_depth_near :" + str(average_depth_near))
+    #
+    #     # First camera movement
+    #     pmc.setKeyframe(cam_parent, attribute="translateX", value=right, time=gap * 0)
+    #     pmc.setKeyframe(cam_parent, attribute="translateY", value=average_top_bottom, time=gap * 0)
+    #     pmc.setKeyframe(cam_parent, attribute="translateZ", value=average_depth_near, time=gap * 0)
+    #     pmc.setKeyframe(cam_parent, attribute="rotateY", value=-260, time=gap * 0)
+    #
+    #     # Second camera movement
+    #     pmc.setKeyframe(cam_parent, attribute="translateX", value=average_left_right, time=gap * 1)
+    #     pmc.setKeyframe(cam_parent, attribute="translateY", value=average_top_bottom, time=gap * 1)
+    #     pmc.setKeyframe(cam_parent, attribute="translateZ", value=depth, time=gap * 1)
+    #     pmc.setKeyframe(cam_parent, attribute="rotateY", value=-180, time=gap * 1)
+    #
+    #     # Third camera movement
+    #     pmc.setKeyframe(cam_parent, attribute="translateX", value=left, time=gap * 2)
+    #     pmc.setKeyframe(cam_parent, attribute="translateY", value=average_top_bottom, time=gap * 2)
+    #     pmc.setKeyframe(cam_parent, attribute="translateZ", value=average_depth_near, time=gap * 2)
+    #     pmc.setKeyframe(cam_parent, attribute="rotateY", value=-90, time=gap * 2)
+    #
+    #     # Fourth camera movement
+    #     pmc.setKeyframe(cam_parent, attribute="translateX", value=left, time=gap * 3)
+    #     pmc.setKeyframe(cam_parent, attribute="translateY", value=average_top_bottom, time=gap * 3)
+    #     pmc.setKeyframe(cam_parent, attribute="translateZ", value=near, time=gap * 3)
+    #     pmc.setKeyframe(cam_parent, attribute="rotateY", value=0, time=gap * 3)
+    #
+    #     # Fifth camera movement
+    #     pmc.setKeyframe(cam_parent, attribute="translateX", value=right, time=gap * 4)
+    #     pmc.setKeyframe(cam_parent, attribute="translateY", value=average_top_bottom, time=gap * 4)
+    #     pmc.setKeyframe(cam_parent, attribute="translateZ", value=average_depth_near, time=gap * 4)
+    #     pmc.setKeyframe(cam_parent, attribute="rotateY", value=90, time=gap * 4)
+    #
+    # else:
+    pmc.warning("Feature in coming !")

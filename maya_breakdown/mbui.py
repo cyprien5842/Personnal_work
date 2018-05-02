@@ -83,8 +83,25 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.transform_direction_layout.addWidget(self.translate_direction_label)
         self.transform_direction_layout.addWidget(self.translate_direction_cbox)
 
+        # Camera turn around layout
+        self.camera_turn_around_layout = QtWidgets.QHBoxLayout()
+
+        # Transform direction widgets
+        self.camera_turn_around_check_box = QtWidgets.QCheckBox("Create turn around camera ")
+        self.camera_turn_around_layout.addWidget(self.camera_turn_around_check_box)
+
         # Frame Range Separator
         self.frame_range_separator_layout = hline.hline_layout("Frame Range")
+
+        # Current frame Range Layout
+        self.current_frame_range_layout = QtWidgets.QHBoxLayout()
+
+        # Current frame range Widget
+        self.current_frame_checkbox = QtWidgets.QCheckBox("Use current frame range")
+        self.current_frame_range_layout.addWidget(self.current_frame_checkbox)
+
+        # Current frame range connection
+        self.current_frame_checkbox.stateChanged.connect(self.update_frame_range_option)
 
         # Frame Range Layout
         self.frame_range_layout = QtWidgets.QHBoxLayout()
@@ -99,7 +116,8 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.frame_range_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
         self.frame_range_slider.setMaximum(50)
 
-        # Connection
+
+        # Frame Range Connection
         self.frame_range_slider.valueChanged.connect(lambda value: self.frame_range_input.setText(str(value)))
         self.frame_range_input.textChanged.connect(lambda value: self.frame_range_slider.setValue(int(value)))
 
@@ -118,17 +136,14 @@ class MayaBreakdownUI(QtWidgets.QDialog):
 
         # Buttons widgets
         self.button_validate = QtWidgets.QPushButton("Validate")
-        self.button_turn_around = QtWidgets.QPushButton("Turn Around")
         self.button_undo = QtWidgets.QPushButton("Undo")
         self.button_close = QtWidgets.QPushButton("Close")
 
         self.button_validate.clicked.connect(self.apply)
-        self.button_turn_around.clicked.connect(self.turn_around)
         self.button_undo.clicked.connect(self.undo)
         self.button_close.clicked.connect(self.close)
 
         self.button_layout.addWidget(self.button_validate)
-        self.button_layout.addWidget(self.button_turn_around)
         self.button_layout.addWidget(self.button_undo)
         self.button_layout.addWidget(self.button_close)
         self.button_layout.setAlignment(QtCore.Qt.AlignBottom)
@@ -140,7 +155,9 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.main_layout.addLayout(self.option_layout)
         self.main_layout.addLayout(self.transform_offset_layout)
         self.main_layout.addLayout(self.transform_direction_layout)
+        #self.main_layout.addLayout(self.camera_turn_around_layout)
         self.main_layout.addLayout(self.frame_range_separator_layout)
+        self.main_layout.addLayout(self.current_frame_range_layout)
         self.main_layout.addLayout(self.frame_range_layout)
         self.main_layout.addLayout(self.progress_layout)
         self.main_layout.addLayout(self.button_layout)
@@ -153,7 +170,12 @@ class MayaBreakdownUI(QtWidgets.QDialog):
     def apply(self):
         setting_dictionnary = {}
         setting_dictionnary['mode'] = self.cbox_mode.currentText()
-        setting_dictionnary['time'] = int(self.frame_range_input.text())
+        if self.current_frame_checkbox.isChecked():
+            start_frame = int(pmc.playbackOptions(animationStartTime=True, query=True))
+            end_frame = int(pmc.playbackOptions(animationEndTime=True, query=True))
+            setting_dictionnary['time'] = (start_frame, end_frame)
+        else:
+            setting_dictionnary['time'] = int(self.frame_range_input.text())
         if self.visible_radio_btn.isChecked():
             setting_dictionnary['visible'] = True
             setting_dictionnary['attribute'] = "visibility"
@@ -162,6 +184,11 @@ class MayaBreakdownUI(QtWidgets.QDialog):
             setting_dictionnary['visible'] = False
             setting_dictionnary['attribute'] = self.translate_direction_cbox.currentText()
             setting_dictionnary['offset'] = int(self.offset_input.text())
+
+        if self.camera_turn_around_check_box.isChecked():
+            setting_dictionnary['camera'] = True
+        else:
+            setting_dictionnary['camera'] = False
         self.action = mbcore.do_the_breakdown(setting_dictionnary, self.progress_bar)
 
     def undo(self):
@@ -182,8 +209,15 @@ class MayaBreakdownUI(QtWidgets.QDialog):
             self.translate_direction_label.setVisible(False)
             self.translate_direction_cbox.setVisible(False)
 
-    def turn_around(self):
-        mbcore.create_turn_around()
+    def update_frame_range_option(self):
+        if self.current_frame_checkbox.isChecked():
+            self.frame_range_label.setVisible(False)
+            self.frame_range_input.setVisible(False)
+            self.frame_range_slider.setVisible(False)
+        else:
+            self.frame_range_label.setVisible(True)
+            self.frame_range_input.setVisible(True)
+            self.frame_range_slider.setVisible(True)
 
 
 def show_window():
