@@ -25,7 +25,26 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         # Main Layout
         self.main_layout = QtWidgets.QVBoxLayout()
 
-        # Combo Box Layout
+        # Selection Separator
+        self.selection_separator_layout = hline.hline_layout("Selection")
+
+        # Selection Layout
+        self.selection_layout = QtWidgets.QHBoxLayout()
+
+        # Selection Widget
+        self.select_group_radio_btn = QtWidgets.QButtonGroup()
+        self.select_all_radio_btn = QtWidgets.QRadioButton("All")
+        self.select_group_radio_btn.addButton(self.select_all_radio_btn)
+        self.select_current_radio_btn = QtWidgets.QRadioButton("Current selection")
+        self.select_group_radio_btn.addButton(self.select_current_radio_btn)
+
+
+        self.select_all_radio_btn.setChecked(True)
+
+        self.selection_layout.addWidget(self.select_all_radio_btn)
+        self.selection_layout.addWidget(self.select_current_radio_btn)
+
+        # Mode Layout
         self.combo_box_layout = QtWidgets.QHBoxLayout()
 
         # Mode Separator
@@ -49,14 +68,17 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.option_layout = QtWidgets.QHBoxLayout()
 
         # Option Widgets
+        self.option_group_radio_btn = QtWidgets.QButtonGroup()
         self.visible_radio_btn = QtWidgets.QRadioButton("Visible/Invisible effect")
+        self.option_group_radio_btn.addButton(self.visible_radio_btn)
         self.translate_radio_btn = QtWidgets.QRadioButton("Translate effect")
+        self.option_group_radio_btn.addButton(self.translate_radio_btn)
 
         self.translate_radio_btn.setChecked(True)
         self.translate_radio_btn.toggled.connect(self.update_current_option_mode)
 
-        self.option_layout.addWidget(self.visible_radio_btn)
         self.option_layout.addWidget(self.translate_radio_btn)
+        self.option_layout.addWidget(self.visible_radio_btn)
 
         # Transform offset layout
         self.transform_offset_layout = QtWidgets.QHBoxLayout()
@@ -149,6 +171,8 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.button_layout.setAlignment(QtCore.Qt.AlignBottom)
 
         # Creation of the main layout
+        self.main_layout.addLayout(self.selection_separator_layout)
+        self.main_layout.addLayout(self.selection_layout)
         self.main_layout.addLayout(self.mode_separator_layout)
         self.main_layout.addLayout(self.combo_box_layout)
         self.main_layout.addLayout(self.option_separator_layout)
@@ -170,6 +194,8 @@ class MayaBreakdownUI(QtWidgets.QDialog):
     def apply(self):
         setting_dictionnary = {}
         setting_dictionnary['mode'] = self.cbox_mode.currentText()
+        setting_dictionnary['selection'] = self.select_group_radio_btn.checkedButton().text()
+
         if self.current_frame_checkbox.isChecked():
             start_frame = int(pmc.playbackOptions(animationStartTime=True, query=True))
             end_frame = int(pmc.playbackOptions(animationEndTime=True, query=True))
@@ -197,6 +223,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         else:
             pmc.warning("Please, do a breakdown !")
 
+
     def update_current_option_mode(self):
         if self.translate_radio_btn.isChecked():
             self.offset_input_label.setVisible(True)
@@ -208,6 +235,7 @@ class MayaBreakdownUI(QtWidgets.QDialog):
             self.offset_input.setVisible(False)
             self.translate_direction_label.setVisible(False)
             self.translate_direction_cbox.setVisible(False)
+
 
     def update_frame_range_option(self):
         if self.current_frame_checkbox.isChecked():

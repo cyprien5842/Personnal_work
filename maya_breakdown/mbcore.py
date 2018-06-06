@@ -4,12 +4,8 @@ import math
 
 def getFrameRange(time):
     frame_range = []
-    # TODO: Use current frame range
-    #start_frame = int(pmc.playbackOptions(animationStartTime=True, query=True))
-    #end_frame = int(pmc.playbackOptions(animationEndTime=True, query=True))
     start_frame = 0
     frame_range.append(start_frame)
-    # TODO: Choose FPS
     end_frame = time*25
     frame_range.append(end_frame)
     pmc.playbackOptions(minTime=start_frame, maxTime=end_frame, playbackSpeed=0, maxPlaybackSpeed=1, edit=True)
@@ -18,6 +14,7 @@ def getFrameRange(time):
 
 def do_the_breakdown(setting_dictionnary, progressbar):
     # Get the user conditions
+    selection = setting_dictionnary['selection']
     mode = setting_dictionnary['mode']
     visible = setting_dictionnary['visible']
     time = setting_dictionnary['time']
@@ -28,7 +25,16 @@ def do_the_breakdown(setting_dictionnary, progressbar):
     transform_position_dict = {}
     transform_dict = {}
 
-    for transform in pmc.ls(geometry=True):
+    list_to_parse = []
+    if selection == "All":
+        list_to_parse = pmc.ls(geometry=True)
+    else:
+        for selection in pmc.ls(selection=True):
+            for children in pmc.listRelatives(selection, allDescendents=True):
+                if pmc.nodeType(children) == "mesh":
+                    list_to_parse.append(children)
+
+    for transform in list_to_parse:
         # Get parent of the shape transform
         transform_parent = pmc.listRelatives(transform, parent=True)[0]
         sum = 0
@@ -75,8 +81,13 @@ def do_the_breakdown(setting_dictionnary, progressbar):
     # Do the operation
     compt = 0
     gap = float(dif_frame_range)/float(len(sorted_geometry_dict))
+
     for geometry, size_bounding_box in sorted_geometry_dict:
         compt += 1
+
+        # Unlock Attributes
+        pmc.setAttr("{0}.{1}".format(geometry, attribute), lock=False)
+
         if visible:
             pmc.setKeyframe(geometry, attribute=attribute, value=0, time=start_frame)
             pmc.setKeyframe(geometry, attribute=attribute, value=1, time=gap * compt)
@@ -96,6 +107,8 @@ def undo(dict, progressbar):
     compt = 0
     for geometry, value in dict['transform_lst']:
         compt += 1
+        # Unlock Attributes
+        pmc.setAttr("{0}.{1}".format(geometry, dict['attribute']), lock=False)
         # Remove the keys
         pmc.cutKey(geometry, time=(dict['frame_range'][0], dict['frame_range'][1]), attribute=dict['attribute'], option="keys")
         if dict['visible']:
