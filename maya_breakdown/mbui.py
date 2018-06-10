@@ -59,8 +59,9 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.cbox_mode.addItem("Bounding_box")
         self.cbox_mode.addItem("Top_to_the_bottom")
         self.cbox_mode.addItem("Bottom_to_the_top")
-        self.cbox_mode.addItem("Far_to_near")
-        self.cbox_mode.addItem("Near_to_far")
+        self.cbox_mode.addItem("Depth")
+
+        self.cbox_mode.currentTextChanged.connect(self.update_current_mode)
 
         self.combo_box_layout.addWidget(self.mode_label)
         self.combo_box_layout.addWidget(self.cbox_mode)
@@ -84,11 +85,35 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.option_layout.addWidget(self.translate_radio_btn)
         self.option_layout.addWidget(self.visible_radio_btn)
 
+        # Axis depth layout
+        self.axis_depth_layout = QtWidgets.QHBoxLayout()
+
+        # Axis depth widget
+        self.axis_depth_label = QtWidgets.QLabel("Axis of depth :")
+        self.axis_depth_cbox = QtWidgets.QComboBox()
+        self.axis_depth_cbox.addItem("translateX")
+        self.axis_depth_cbox.addItem("translateZ")
+        self.axis_depth_label.setVisible(False)
+        self.axis_depth_cbox.setVisible(False)
+
+        self.axis_depth_layout.addWidget(self.axis_depth_label)
+        self.axis_depth_layout.addWidget(self.axis_depth_cbox)
+
+
+        # Axis reverse layout
+        self.axis_reverse_depth_layout = QtWidgets.QHBoxLayout()
+
+        # Axis reverse widgets
+        self.axis_reverse_depth_checkbox = QtWidgets.QCheckBox("Reverse Depth")
+  
+        self.axis_reverse_depth_layout.addWidget(self.axis_reverse_depth_checkbox)
+
         # Transform offset layout
         self.transform_offset_layout = QtWidgets.QHBoxLayout()
 
         # Transform offset widgets
         self.offset_input_label = QtWidgets.QLabel("Transform offset :")
+
         self.offset_input = QtWidgets.QLineEdit()
         self.offset_input.setText("1000")
         self.offset_input.setValidator(self.only_int)
@@ -181,6 +206,8 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.main_layout.addLayout(self.combo_box_layout)
         self.main_layout.addLayout(self.option_separator_layout)
         self.main_layout.addLayout(self.option_layout)
+        self.main_layout.addLayout(self.axis_depth_layout)
+        self.main_layout.addLayout(self.axis_reverse_depth_layout)
         self.main_layout.addLayout(self.transform_offset_layout)
         self.main_layout.addLayout(self.transform_direction_layout)
         #self.main_layout.addLayout(self.camera_turn_around_layout)
@@ -199,6 +226,11 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         setting_dictionnary = {}
         setting_dictionnary['mode'] = self.cbox_mode.currentText()
         setting_dictionnary['selection'] = self.select_group_radio_btn.checkedButton().text()
+        setting_dictionnary['axis_depth'] = self.axis_depth_cbox.currentText()
+        if  setting_dictionnary['mode'] == "depth":
+            setting_dictionnary['axis_reverse'] = self.axis_reverse_depth_checkbox.isChecked()
+        else:
+             setting_dictionnary['axis_reverse'] = False
 
         if self.current_frame_checkbox.isChecked():
             start_frame = int(pmc.playbackOptions(animationStartTime=True, query=True))
@@ -240,6 +272,15 @@ class MayaBreakdownUI(QtWidgets.QDialog):
             self.translate_direction_label.setVisible(False)
             self.translate_direction_cbox.setVisible(False)
 
+    def update_current_mode(self):
+        if self.cbox_mode.currentText() in ['Depth']:
+            self.axis_depth_label.setVisible(True)
+            self.axis_depth_cbox.setVisible(True)
+            self.axis_reverse_depth_checkbox.setVisible(True)
+        else:
+            self.axis_depth_label.setVisible(False)
+            self.axis_depth_cbox.setVisible(False)
+            self.axis_reverse_depth_checkbox.setVisible(False)
 
     def update_frame_range_option(self):
         if self.current_frame_checkbox.isChecked():

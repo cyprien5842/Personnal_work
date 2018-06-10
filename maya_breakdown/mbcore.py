@@ -20,6 +20,8 @@ def do_the_breakdown(setting_dictionnary, progressbar):
     time = setting_dictionnary['time']
     attribute = setting_dictionnary['attribute']
     offset = setting_dictionnary['offset']
+    axis_depth = setting_dictionnary['axis_depth']
+    axis_reverse = setting_dictionnary['axis_reverse']
 
     # Create dict to save the position for the undo feature and another dict for make the breakdown
     transform_position_dict = {}
@@ -54,8 +56,11 @@ def do_the_breakdown(setting_dictionnary, progressbar):
             if attribute == "translateZ":
                 sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[2]
 
-        if mode in ["Far_to_near", "Near_to_far"]:
-            sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[0]
+        if mode in ["Depth"]:
+            if axis_depth == "translateX":
+                sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[0]
+            if axis_depth=="translateZ":
+                sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[2]
 
 
         # Get the transform position for the undo
@@ -64,11 +69,11 @@ def do_the_breakdown(setting_dictionnary, progressbar):
 
     print(transform_dict)
     # Sort the transform dictionnary
-    if mode in ["Bounding_box", "Top_to_the_bottom", "Far_to_near"]:
+    if mode in ["Bounding_box", "Top_to_the_bottom", "Depth"] and not axis_reverse:
         sorted_geometry_dict = sorted(transform_dict.items(), key=operator.itemgetter(1), reverse=True)
         print(sorted_geometry_dict)
 
-    if mode in ["Bottom_to_the_top", "Near_to_far"]:
+    if mode in ["Bottom_to_the_top",  "Depth"] and axis_reverse:
         sorted_geometry_dict = sorted(transform_dict.items(), key=operator.itemgetter(1))
         print(sorted_geometry_dict)
 
