@@ -21,7 +21,7 @@ def do_the_breakdown(setting_dictionnary, progressbar):
     attribute = setting_dictionnary['attribute']
     offset = setting_dictionnary['offset']
     axis_depth = setting_dictionnary['axis_depth']
-    axis_reverse = setting_dictionnary['axis_reverse']
+    reverse_effect = setting_dictionnary['reverse_effect']
 
     # Create dict to save the position for the undo feature and another dict for make the breakdown
     transform_position_dict = {}
@@ -47,14 +47,9 @@ def do_the_breakdown(setting_dictionnary, progressbar):
                 for bounding_box_value in bounding_box:
                     sum += abs(bounding_box_value)
 
-        if mode in ["Top_to_the_bottom", "Bottom_to_the_top"]:
+        if mode in ["Top_to_bottom"]:
             # Get the worldspace position in terms of translate attribute
-            if attribute == "translateX":
-                sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[0]
-            if attribute == "translateY":
-                sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
-            if attribute == "translateZ":
-                sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[2]
+            sum = pmc.xform(transform_parent, query=True, worldSpace=True, rotatePivot=True)[1]
 
         if mode in ["Depth"]:
             if axis_depth == "translateX":
@@ -69,11 +64,11 @@ def do_the_breakdown(setting_dictionnary, progressbar):
 
     print(transform_dict)
     # Sort the transform dictionnary
-    if mode in ["Bounding_box", "Top_to_the_bottom", "Depth"] and not axis_reverse:
+    if mode in ["Bounding_box", "Top_to_bottom", "Depth"] and not reverse_effect:
         sorted_geometry_dict = sorted(transform_dict.items(), key=operator.itemgetter(1), reverse=True)
         print(sorted_geometry_dict)
 
-    if mode in ["Bottom_to_the_top",  "Depth"] and axis_reverse:
+    if mode in ["Bounding_box", "Top_to_bottom", "Depth"] and reverse_effect:
         sorted_geometry_dict = sorted(transform_dict.items(), key=operator.itemgetter(1))
         print(sorted_geometry_dict)
 
