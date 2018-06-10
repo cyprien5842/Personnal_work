@@ -10,8 +10,10 @@ import maya_breakdown.hline as hline
 reload(hline)
 reload(mbcore)
 from maya_breakdown.vendor.Qt import QtWidgets, QtCore, QtGui
-from PySide2 import QtWidgets, QtGui, QtCore
-
+try:
+    from PyQt5 import QtWidgets, QtGui, QtCore
+except ImportError:
+    from PySide2 import QtWidgets, QtGui, QtCore
 
 class MayaBreakdownUI(QtWidgets.QDialog):
     def __init__(self, parent=QtWidgets.QApplication.desktop()):
@@ -57,6 +59,8 @@ class MayaBreakdownUI(QtWidgets.QDialog):
         self.cbox_mode.addItem("Bounding_box")
         self.cbox_mode.addItem("Top_to_the_bottom")
         self.cbox_mode.addItem("Bottom_to_the_top")
+        self.cbox_mode.addItem("Far_to_near")
+        self.cbox_mode.addItem("Near_to_far")
 
         self.combo_box_layout.addWidget(self.mode_label)
         self.combo_box_layout.addWidget(self.cbox_mode)
