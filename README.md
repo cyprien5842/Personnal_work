@@ -5,7 +5,7 @@ This script is currently use at <a href="http://www.artfx.fr/en/">ArtFx</a>
 # 1.] How to setup the plugin ? 
 
 It's easy ! 
-Create a shelf in Maya with the next script.
+Create a python shelf in Maya with the next script.
 
 
     import sys
